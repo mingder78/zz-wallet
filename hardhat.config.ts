@@ -2,12 +2,17 @@ import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@tenderly/hardhat-tenderly";
+import "@nomicfoundation/hardhat-verify";
+
 import * as dotenv from "dotenv";
 dotenv.config();
  
 const config: HardhatUserConfig = {
+  defaultNetwork: "sepolia", 
   networks: {
-      sepolia: {
+    hardhat: {
+    },
+    sepolia: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       accounts: [process.env.PRIVATE_KEY],
     },
@@ -25,7 +30,21 @@ const config: HardhatUserConfig = {
   tenderly: {
     project: "project/z",
     username: "mingderwang2",
-    privateVerification: false, // Public verification
+    privateVerification: false,
+  },
+  etherscan: {
+    apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY,
+    },
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts"
+  },
+  mocha: {
+    timeout: 40000
   },
 };
 

@@ -1,13 +1,14 @@
 {
   "name": "hardhat-project",
   "description": "deploy EntryPoint, Abstract Account Factory, and test",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scripts": {
     "node": "npx hardhat node",
     "compile": "npx hardhat compile",
-    "dev": "npx hardhat ignition deploy ./ignition/modules/EntryPoint.ts ",
-    "dev:aa": "npx hardhat ignition deploy ./ignition/modules/AbstractAccount.ts ",
-    "dev:aaf": "npx hardhat ignition deploy ./ignition/modules/AbstractAccountFactory.ts "
+    "dev": "bun dev:ep && bun dev:aa && bun dev:aaf",
+    "dev:ep": "npx hardhat ignition deploy ./ignition/modules/EntryPoint.ts --deployment-id sepolia-ming --verify --network sepolia",
+    "dev:aa": "npx hardhat ignition deploy ./ignition/modules/AbstractAccount.ts  --deployment-id sepolia-ming --verify --network sepolia",
+    "dev:aaf": "npx hardhat ignition deploy ./ignition/modules/AbstractAccountFactory.ts --deployment-id sepolia-ming --verify --network sepolia"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
