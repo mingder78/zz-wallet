@@ -1,7 +1,7 @@
 {
   "name": "hardhat-project",
   "description": "deploy EntryPoint, Abstract Account Factory, and test",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "node": "npx hardhat node",
     "compile": "npx hardhat compile",

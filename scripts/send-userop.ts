@@ -21,6 +21,18 @@ import { sepolia } from 'viem/chains';
 import fs from 'fs';
 import path from 'path';
 
+export type UserOperation = {
+  sender: Address;
+  nonce: bigint;
+  initCode: Hex;
+  callData: Hex;
+  accountGasLimits: Hex; // bytes32 packed
+  preVerificationGas: bigint;
+  gasFees: Hex; // bytes32 packed
+  paymasterAndData: Hex;
+  signature: Hex;
+};
+
 const ENTRYPOINT_ADDRESS = '0x64e4476B8a75E66FA31c198b702a3C6784CEf29e'; // '0x0576a174D229E3cFA37253523E645A78A0C91B57';
 const AA_ADDRESS = '0xf244D7d836E232E6CF337070be635245E6a67Da0';
 const RECEIVER = '0xF565371679083ED779F9Ef6bdeA7Bd29a6D6EEAE';
@@ -110,7 +122,7 @@ console.log('userOp', userOp);
 const userOpAbiParam = [
   {
     name: 'ops',
-    type: 'tuple[]',
+    type: 'tuple',
     components: [
       { name: 'sender', type: 'address' },
       { name: 'nonce', type: 'uint256' },
@@ -121,28 +133,39 @@ const userOpAbiParam = [
       { name: 'gasFees', type: 'bytes32' },
       { name: 'paymasterAndData', type: 'bytes' },
       { name: 'signature', type: 'bytes' },
-    ],
+    ] as const,
   },
 ];
 
   // 5. Encode and hash the UserOperation array with empty signature
-function packUserOp(userOp: UserOperation): Hex {
-  return encodeAbiParameters(
-    [
-       userOpAbiParam,
-    ],
-    [
-      {
-        ...userOp,
-        signature: '0x',  // do not include signature when hashing
-      },
-    ]
-  );
-}
+
+const userOpAbiComponents = [
+  { name: 'sender', type: 'address' },
+  { name: 'nonce', type: 'uint256' },
+  { name: 'initCode', type: 'bytes' },
+  { name: 'callData', type: 'bytes' },
+  { name: 'accountGasLimits', type: 'bytes32' },
+  { name: 'preVerificationGas', type: 'uint256' },
+  { name: 'gasFees', type: 'bytes32' },
+  { name: 'paymasterAndData', type: 'bytes' },
+  { name: 'signature', type: 'bytes' },
+] as const;
+
+const encodedUserOp = encodeAbiParameters(
+  [
+    {
+      name: 'userOp',
+      type: 'tuple',
+      components: userOpAbiComponents,
+    },
+  ],
+  [
+    userOp,
+  ]
+);
 
 const chainId = await publicClient.getChainId(); // e.g., 11155111 for Sepolia
 const entryPoint = ENTRYPOINT_ADDRESS;  
-const encodedUserOp = packUserOp(userOp);
 console.log('encodedUserOp', encodedUserOp)
 
 const userOpHash = keccak256(
@@ -157,7 +180,7 @@ const userOpHash = keccak256(
   console.log('userOpHash', userOpHash)
 
   // 6. Sign the userOpHash with the owner's private key
-  const sig = await owner.signMessage({ message: toBytes(userOpHash) });
+  const sig = await owner.signMessage({ message: { raw: userOpHash } });
   console.log('sig', sig) 
 
   // 7. Extract r,s,v from signature and encode to bytes for your AA recover()
